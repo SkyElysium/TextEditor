@@ -1,2 +1,6 @@
 # TextEditor
-A Light Editor
+
+You should prepare this:
+```
+pip install clipboard
+```
