@@ -16,6 +16,8 @@ class LineNumberBar(Text):
         self.text_obj.yview_scroll(int(-1 * (event.delta / 120)), 'units')
         self.yview_scroll(int(-1 * (event.delta / 120)), 'units')
 
+        return 'break'
+
     def update_line_number(self):
         line_num = self.text_obj.index('end').split('.')[0]
 
@@ -36,3 +38,4 @@ class LineNumberBar(Text):
         self.yview_moveto(self.text_obj.yview()[0])
 
         self.tag_add('center', '1.0', 'end')
+
