@@ -19,8 +19,3 @@ pip install clipboard
 Supported Format:
 
   - [x] UTF-8
-
-Features:
-
-- [x] File Controls
-- [x] Basic edit
