@@ -1,14 +1,14 @@
 # TextEditor
 
-使用Python版本：3.8.9
+Used Python Version: 3.8.9
 
-依赖库：
+Depend on:
 
   - clipboard
   - tkinter (ttk)
   - os
 
-下载clipboard库：
+To install clipboard:
 
 ```
 pip install clipboard
@@ -16,6 +16,6 @@ pip install clipboard
 
 ---
 
-支持编码格式：
+Supported Format:
 
   - [x] UTF-8
