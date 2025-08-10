@@ -1,7 +1,5 @@
 # TextEditor
 
-**中文**
-
 使用Python版本：3.8.9
 
 依赖库：
