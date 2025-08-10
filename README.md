@@ -21,25 +21,3 @@ pip install clipboard
 支持编码格式：
 
   - [x] UTF-8
-
-**English**
-
-Used Python Version: 3.8.9
-
-Depend on:
-
-  - clipboard
-  - tkinter (ttk)
-  - os
-
-To install clipboard:
-
-```
-pip install clipboard
-```
-
----
-
-Supported Format:
-
-  - [x] UTF-8
