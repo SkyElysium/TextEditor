@@ -105,6 +105,8 @@ class MenuOptCmd:
         self.nb_obj.tab(tab_id, text = os.path.basename(path))
 
     def close(self, event = None):
+        if not self.nb_obj.tabs(): return
+
         tab = self.nb_obj.nametowidget(self.nb_obj.select())
 
         tab.destroy()
@@ -160,3 +162,4 @@ class MenuOptCmd:
         tab = self.nb_obj.nametowidget(self.nb_obj.select())
 
         tab.select_all()
+
