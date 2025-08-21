@@ -1,21 +1,23 @@
 # TextEditor
 
-Used Python Version: 3.8.9
+Code in Python Version: 3.8.9
 
-Depend on:
+**Depand on Libraries**:
 
-  - clipboard
-  - tkinter (ttk)
-  - os
+**The Python Standard Libraries**:
 
-To install clipboard:
+- os
+- tkinter (ttk)
+
+**The Third Party Libraries**:
+
+- clipboard
+
+**!** Remember to Install This:
 
 ```
-pip install clipboard
+pip insatll clipboard
 ```
 
----
-
-Supported Format:
-
-  - [x] UTF-8
+> [!NOTE]
+> Oops, The Editor Only Supports the UTF-8 Format Beacuse of the Large Code. (Hurring Up)
