@@ -1,4 +1,4 @@
-from tkinter import Frame, Text, Menu, Scrollbar, PhotoImage, font
+from tkinter import Frame, Text, Menu, Scrollbar, PhotoImage
 from tkinter.ttk import Notebook, Style
 
 from core.settings import *
@@ -152,3 +152,4 @@ class TextTab(Frame):
 
     def select_all(self, event = None):
         self.text.event_generate('<<SelectAll>>')
+
