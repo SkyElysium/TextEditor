@@ -1,8 +1,8 @@
 # TextEditor
 
-Code in Python Version: 3.8.9
+Coded in Python Version: `3.8.9`
 
-**Depand on Libraries**:
+**Requirements**:
 
 **The Python Standard Libraries**:
 
