@@ -1,6 +1,6 @@
 # TextEditor
 
-Coded in Python Version: `3.8.9`
+![Static Badge](https://img.shields.io/badge/used_python-3.8.9-brightgreen?style=for-the-badge)
 
 ### **Requirements**:
 
