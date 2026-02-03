@@ -8,3 +8,9 @@
 - os
 - tkinter (ttk)
 - clipboard
+
+**You may need to install something**:
+
+```
+pip install clipboard
+```
