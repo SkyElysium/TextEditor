@@ -14,3 +14,6 @@
 ```
 pip install clipboard
 ```
+> [!CAUTION]
+> There're some bugs about the memory leak, and I'm doing some tests.
+> Don't use it now.
