@@ -1,8 +1,8 @@
-# Main window config
+# Used at editor.py for window config.
 MAIN_WINDOW_TITLE = 'TextEditor'
 MAIN_WINDOW_SIZE = '800x500'
 
-# Notebook config for the "layout" function
+# Used at custom_notebook.py for the "layout" function.
 CUSTOM_NOTEBOOK_STYLE = [('CustomNotebook.tab',
 {
     'sticky': 'nswe',

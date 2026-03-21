@@ -1,200 +1,198 @@
-from core.config import *
-from core.line_number_bar import LineNumberBar
-
-from tkinter import filedialog, messagebox
+from __future__ import annotations
+from typing import Optional, Tuple
 
 import clipboard
-import os
-
 import tkinter as tk
 import tkinter.ttk as ttk
 
+from tkinter import filedialog, messagebox
+from pathlib import Path
+
+from core.config import *
+from core.line_number_bar import LineNumberBar
+
+
 class CustomNotebook(ttk.Notebook):
-    def __init__(self, main_window):
-        super().__init__()
+    def __init__(self, master: tk.Misc) -> None:
 
-        self.main_window = main_window
+        super().__init__(master)
 
-        self.create_close_btn()
+        self.main_window = master
 
-        self.bind('<Button-1>', self.on_press_close)
-        self.bind('<B1-Motion>', self.move_sel_tab)
-        self.bind('<<NotebookTabChanged>>', self.update_info_on_title)
-
-    def create_close_btn(self):
-        self.close_img = tk.PhotoImage(file = 'data/close.png')
+        # Create the closing button.
+        self.close_image = tk.PhotoImage(file = 'data/close.png')
 
         self.custom_style = ttk.Style()
 
-        # Regard "close" as a command lets the tab destory
-        self.custom_style.element_create('close', 'image', self.close_img)
+        # Regard "close" as a command that lets the tab destory.
+        self.custom_style.element_create('close', 'image', self.close_image)
 
         self.custom_style.layout('CustomNotebook', [('CustomNotebook.client', {'sticky': 'nswe'})])
-
         self.custom_style.layout('CustomNotebook.Tab', CUSTOM_NOTEBOOK_STYLE)
 
         self['style'] = 'CustomNotebook'
 
-    def on_press_close(self, event):
+        # Binding part
+        self.bind('<Button-1>', self._on_pressing_close)
+        self.bind('<B1-Motion>', self._move_selected_tab)
+
+        self.bind('<<NotebookTabChanged>>', self._update_info_on_title)
+
+    def _on_pressing_close(self, event: tk.Event) -> None:
+
         if self.identify(event.x, event.y) == 'close':
             self.remove_tab(tab_id = f'@{event.x}, {event.y}')
 
-    def move_sel_tab(self, event):
-        # Must be an exsit tab
+    def _move_selected_tab(self, event: tk.Event) -> None:
+
+        # Use try-except to prevent the cursor from moving on nothing.
         try:
             tab_index = self.index(f'@{event.x}, {event.y}')
 
             self.insert(tab_index, self.select())
-
         except: pass
 
-    def update_info_on_title(self, event = None):
-        tab = self.get_tab()[1]
+    def _update_info_on_title(self, event: Optional[tk.Event] = None) -> None:
 
-        if not self.tabs() or not tab.path:
-            self.main_window.title(MAIN_WINDOW_TITLE)
-        else:
-            self.main_window.title(f'{MAIN_WINDOW_TITLE} - {tab.path}')
+        self.main_window.title(MAIN_WINDOW_TITLE)
 
-    def add_tab(self, event = None, tab_name = 'Untitled'):
-        tab = TextTab()
-
-        self.add(tab, text = tab_name)
-
-        return tab
-
-    def remove_tab(self, event = None, tab_id = ''):
         if not self.tabs(): return
 
-        if not tab_id:
-            tab = self.select()
-        else:
-            tab = self.tabs()[self.index(tab_id)]
+        _, text_tab = self.get_tab()
+
+        if text_tab.path:
+            self.main_window.title(f'{MAIN_WINDOW_TITLE} - {text_tab.path}')
+
+    def add_tab(self, event: Optional[tk.Event] = None, tab_name: str = '未命名') -> TextTab:
+
+        text_tab = TextTab()
+
+        self.add(text_tab, text = tab_name)
+
+        text_tab.line_number_bar.update_line_number()
+
+        return text_tab
+
+    def remove_tab(self, event: Optional[tk.Event] = None, tab_id: str = '') -> None:
+
+        if not self.tabs(): return
+        # TabId for @x, y should be turned into ".!".
+        tab = self.tabs()[self.index(tab_id)] if tab_id else self.select()
 
         self.forget(tab)
+        self.nametowidget(tab).destroy()
 
-        self.update_info_on_title()
+        self.event_generate('<<NotebookTabClosed>>')
 
-    def get_tab(self):
-        if not self.tabs(): return '', None
+        self._update_info_on_title()
 
-        tab_id = self.select()
-        tab = self.nametowidget(tab_id) # Get the "TextTab" class
+    def get_tab(self) -> Tuple[str, TextTab]:
 
-        return tab_id, tab
+        tab = self.select()
+        text_tab = self.nametowidget(tab)
 
-    def open(self, event = None):
-        path = filedialog.askopenfilename(title = 'Open in UTF-8',
-                                          filetypes = [('Text File', '*.txt'), ('None Type', '*.*')])
+        return tab, text_tab
+
+    def open_file(self, event: Optional[tk.Event] = None) -> None:
+
+        path = filedialog.askopenfilename(
+            title = '打开',
+            filetypes = [('文本文档', '*.txt'), ('所有类型', '*.*')]
+        )
+
         if not path: return
 
-        tab = self.add_tab()
-        tab.path = path
+        try:
+            file = Path(path)
+            text = file.read_text(encoding = 'utf-8')
 
-        self.add(tab, text = os.path.basename(path))
+            text_tab = self.add_tab(tab_name = file.name)
+            text_tab.text.insert('end', text)
+        except:
+            messagebox.showerror(
+                title = '错误',
+                message = '无法打开此文件'
+            )
 
-        with open(path, 'r', encoding = 'utf-8', buffering = 1024) as get_file_text:
-            while True:
-                try: block = get_file_text.read()
+        text_tab.path = path
+        text_tab.label = file.name
 
-                except UnicodeDecodeError:
-                    self.remove_tab(tab_id = tab)
+        text_tab.line_number_bar.update_line_number()
 
-                    messagebox.showerror(title = 'DecodeError', message = 'Not UTF-8 format')
+    def save_file(self, event: Optional[tk.Event] = None) -> None:
 
-                    break
+        if not self.tabs(): return
 
-                tab.text.insert('end', block)
+        _, text_tab = self.get_tab()
 
-                if not block: break
+        if not text_tab.path:
+            self.save_file_as()
+            if not text_tab.path: return
 
-        tab.line_number_bar.update_line_number()
+        text = text_tab.text.get('1.0', 'end-1c')  # No self adding "new line".
 
-    def save(self, event = None, path = ''):
-        tab = self.get_tab()[1]
-        if not path:
-            path = tab.path
+        try:
+            file = Path(text_tab.path)
+            file.write_text(text, encoding = 'utf-8')
+        except:
+            messagebox.showerror(
+                title = '错误',
+                message = '无法保存此文件'
+            )
 
-        if not path and not tab.path:
-            self.save_as()
+    def save_file_as(self, event: Optional[tk.Event] = None) -> None:
+
+        path = filedialog.asksaveasfilename(
+            title = '另存为...',
+            defaultextension = '.txt',
+            filetypes = [('文本文档', '*.txt'), ('所有类型', '*.*')]
+        )
+
+        if not path: return
+
+        tab, text_tab = self.get_tab()
+
+        if text_tab.path:
+            # When the file has been, enter this fork.
+            temp = text_tab.path
+            text_tab.path = path
+
+            self.save_file()
+
+            text_tab.path = temp
 
             return
 
-        with open(path, 'w', encoding = 'utf-8') as save_text_to_file:
-            text = tab.text.get('1.0', 'end')
+        text_tab.path = path
+        text_tab.label = Path(path).name
 
-            save_text_to_file.write(text)
+        self.save_file()
 
-    def save_as(self, event = None):
-        tab_id, tab = self.get_tab()
+        self.tab('current', text = text_tab.label)
 
-        path = filedialog.asksaveasfilename(title = 'Save As... in UTF-8',
-                                            defaultextension = '.txt', filetypes = [('Text File', '*.txt'), ('None Type', '*.*')])
-        if not path: return
-
-        if tab.path:
-            self.save(path = path)
-
-            return
-
-        tab.path = path
-
-        self.save()
-
-        self.update_info_on_title()
-        self.tab(tab_id, text = os.path.basename(path))
 
 class TextTab(tk.Frame):
-    def __init__(self):
+    def __init__(self) -> None:
+
         super().__init__()
 
+        # Tab config
         self.path = ''
+        self.label = ''
 
-        self.place_widgets()
-        self.right_click_menu()
+        # Wigets
+        self.text = tk.Text(
+            self,
+            wrap = 'none',
+            undo = True,
+            bd = False,
+            font = ('Consolas', 13)
+        )
 
-        # Make sure only one function is called
-        for event in ['<<Paste>>', '<<Copy>>', '<<Cut>>', '<<SelectAll>>', '<<Undo>>', '<<Redo>>']:
-            for key in self.text.event_info(event):
-                self.text.event_delete(event, key)
-
-        self.text.bind('<Control-z>', self.undo)
-        self.text.bind('<Control-Z>', self.undo)
-        self.text.bind('<Control-Shift-z>', self.redo)
-        self.text.bind('<Control-Shift-Z>', self.redo)
-        self.text.bind('<Control-c>', self.copy)
-        self.text.bind('<Control-C>', self.copy)
-        self.text.bind('<Control-x>', self.cut)
-        self.text.bind('<Control-X>', self.cut)
-        self.text.bind('<Control-v>', self.paste)
-        self.text.bind('<Control-V>', self.paste)
-        self.text.bind('<Control-a>', self.select_all)
-        self.text.bind('<Control-A>', self.select_all)
-
-        self.text.bind('<Button-3>', lambda event: self.menu.post(event.x_root, event.y_root))
-
-        # For the line number bar
-        self.text.bind('<Any-KeyPress>', lambda event: self.after(1, self.line_number_bar.update_line_number))
-        self.text.bind('<<Selection>>', lambda event: self.line_number_bar.scroll_selection())
-
-        self.text.bind('<MouseWheel>', self.line_number_bar.wheel)
-        self.line_number_bar.bind('<MouseWheel>', self.line_number_bar.wheel)
-
-        self.line_number_bar.bind('<Button-1>', lambda event: 'break')
-
-        self.line_number_bar.update_line_number()
-
-    def place_widgets(self):
-        self.edit_area = tk.Frame(self)
-        self.edit_area.pack(fill = 'both', expand = True)
-
-        self.text = tk.Text(self.edit_area, wrap = 'none', undo = True, bd = False, font = ('Consolas', 13))
-
-        self.line_number_bar = LineNumberBar(master = self.edit_area, text_obj = self.text)
-
+        self.line_number_bar = LineNumberBar(self)
         self.line_number_bar.pack(fill = 'y', side = 'left')
 
-        self.scrollbar = tk.Scrollbar(self.edit_area)
+        self.scrollbar = tk.Scrollbar(self)
         self.scrollbar.pack(fill = 'y', side = 'right')
 
         self.text.pack(fill = 'both', expand = True)
@@ -202,52 +200,124 @@ class TextTab(tk.Frame):
         self.text['yscrollcommand'] = self.scrollbar.set
         self.scrollbar.config(command = self.line_number_bar.scroll)
 
-    def right_click_menu(self):
-        self.menu = tk.Menu(tearoff = False)
+        self.right_click_menu()
 
-        self.menu.add_command(label = 'Copy', command = self.copy)
-        self.menu.add_command(label = 'Cut', command = self.cut)
-        self.menu.add_command(label = 'Paste', command = self.paste)
+        # Reimplement these methods below inside the class.
+        for event in [
+            '<<Undo>>',
+            '<<Redo>>',
+            '<<Copy>>',
+            '<<Cut>>',
+            '<<Paste>>',
+            '<<SelectAll>>'
+        ]:
+            for key in self.text.event_info(event):
+                self.text.event_delete(event, key)
 
-    def undo(self, event = None):
+        # Binding part
+        binding_dict = {
+            '<Control-z>': self.undo,
+            '<Control-Shift-z>': self.redo,
+            '<Control-c>': self.copy,
+            '<Control-x>': self.cut,
+            '<Control-v>': self.paste,
+            '<Control-a>': self.select_all
+        }
+
+        for shortcut, method in binding_dict.items():
+            if not shortcut.istitle(): self.bind(shortcut.title(), method)
+
+            self.bind(shortcut, method)
+
+        self.text.bind('<Control-o>', self._ctrl_o)
+        self.text.bind('<Button-3>', self._popup_menu)
+
+        # For the line number bar
+        self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number)
+        self.text.bind('<<Selection>>', self._selecting_scrolling)
+
+        self.text.bind('<MouseWheel>', self.line_number_bar.wheel)
+        self.line_number_bar.bind('<MouseWheel>', self.line_number_bar.wheel)
+
+        self.line_number_bar.bind('<Button-1>', self._no_clicking_line_number_bar)
+
+        # For highlighting the current line
+        self.text.bind('<Button-1>', self._delay_to_highlight)
+
+        self.line_number_bar.update_line_number()
+
+    def right_click_menu(self) -> None:
+
+        self.menu = tk.Menu(self, tearoff = False)
+
+        self.menu.add_command(label = '复制', accelerator = 'Ctrl+C', command = self.copy)
+        self.menu.add_command(label = '剪切', accelerator = 'Ctrl+X', command = self.cut)
+        self.menu.add_command(label = '粘贴', accelerator = 'Ctrl+V', command = self.paste)
+
+    def _popup_menu(self, event: tk.Event) -> None:
+
+        self.menu.post(event.x_root, event.y_root)
+
+    def _delay_to_update_line_number(self, event: tk.Event) -> None:
+
+        # Wait until entering successfully.
+        self.after(1, self.line_number_bar.update_line_number)
+
+    def _delay_to_highlight(self, event: tk.Event) -> None:
+
+        # Wait until clicking successfully.
+        self.after(1, self.line_number_bar.update_highlight_current_line)
+
+    def _ctrl_o(self, event: tk.Event) -> None: return None  # Tkinter has bound ctrl+o inside "Text".
+
+    def _no_clicking_line_number_bar(self, event: tk.Event) -> str: return 'break'
+
+    def _selecting_scrolling(self, event: tk.Event) -> None:
+
+        self.line_number_bar.scroll_when_selecting()
+
+    def undo(self, event: Optional[tk.Event] = None) -> None:
+
         self.text.event_generate('<<Undo>>')
 
         self.line_number_bar.update_line_number()
 
-    def redo(self, event = None):
+    def redo(self, event: Optional[tk.Event] = None) -> None:
+
         self.text.event_generate('<<Redo>>')
 
         self.line_number_bar.update_line_number()
 
-    def copy(self, event = None):
+    def copy(self, event: Optional[tk.Event] = None) -> None:
+
         try:
             sel_text = self.text.get('sel.first', 'sel.last')
 
             clipboard.copy(sel_text)
-
         except: pass
 
-    def cut(self, event = None):
+    def cut(self, event: Optional[tk.Event] = None) -> None:
+
         try:
             self.copy()
 
             self.text.delete('sel.first', 'sel.last')
 
             self.line_number_bar.update_line_number()
-
         except: pass
 
-    def paste(self, event = None):
+    def paste(self, event: Optional[tk.Event] = None) -> None:
+
         text_from_clipboard = clipboard.paste()
 
         try:
             self.text.delete('sel.first', 'sel.last')
-
         except: pass
 
         self.text.insert('insert', text_from_clipboard)
 
         self.line_number_bar.update_line_number()
 
-    def select_all(self, event = None):
+    def select_all(self, event: Optional[tk.Event] = None) -> None:
+
         self.text.event_generate('<<SelectAll>>')
