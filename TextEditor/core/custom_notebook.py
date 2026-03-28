@@ -225,9 +225,9 @@ class TextTab(tk.Frame):
         }
 
         for shortcut, method in binding_dict.items():
-            if not shortcut.istitle(): self.bind(shortcut.title(), method)
+            if not shortcut.istitle(): self.text.bind(shortcut.title(), method)
 
-            self.bind(shortcut, method)
+            self.text.bind(shortcut, method)
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
