@@ -50,7 +50,7 @@ class CustomNotebook(ttk.Notebook):
             tab_index = self.index(f'@{event.x}, {event.y}')
 
             self.insert(tab_index, self.select())
-        except: pass
+        except tk.TclError: pass
 
     def _update_info_on_title(self, event: Optional[tk.Event] = None) -> None:
 
@@ -75,7 +75,6 @@ class CustomNotebook(ttk.Notebook):
 
     def remove_tab(self, event: Optional[tk.Event] = None, tab_id: str = '') -> None:
 
-        if not self.tabs(): return
         # TabId for @x, y should be turned into ".!".
         tab = self.tabs()[self.index(tab_id)] if tab_id else self.select()
 
@@ -108,7 +107,7 @@ class CustomNotebook(ttk.Notebook):
 
             text_tab = self.add_tab(tab_name = file.name)
             text_tab.text.insert('end', text)
-        except:
+        except UnicodeDecodeError:
             messagebox.showerror(
                 title = '错误',
                 message = '无法打开此文件'
@@ -121,8 +120,6 @@ class CustomNotebook(ttk.Notebook):
 
     def save_file(self, event: Optional[tk.Event] = None) -> None:
 
-        if not self.tabs(): return
-
         _, text_tab = self.get_tab()
 
         if not text_tab.path:
@@ -131,14 +128,8 @@ class CustomNotebook(ttk.Notebook):
 
         text = text_tab.text.get('1.0', 'end-1c')  # No self adding "new line".
 
-        try:
-            file = Path(text_tab.path)
-            file.write_text(text, encoding = 'utf-8')
-        except:
-            messagebox.showerror(
-                title = '错误',
-                message = '无法保存此文件'
-            )
+        file = Path(text_tab.path)
+        file.write_text(text, encoding = 'utf-8')
 
     def save_file_as(self, event: Optional[tk.Event] = None) -> None:
 
@@ -180,6 +171,9 @@ class TextTab(tk.Frame):
         self.path = ''
         self.label = ''
 
+        self.grid_columnconfigure(1, weight = 1)
+        self.grid_rowconfigure(0, weight = 1)
+
         # Wigets
         self.text = tk.Text(
             self,
@@ -190,12 +184,18 @@ class TextTab(tk.Frame):
         )
 
         self.line_number_bar = LineNumberBar(self)
-        self.line_number_bar.pack(fill = 'y', side = 'left')
+        self.line_number_bar.grid(row = 0, column = 0, rowspan = 2, sticky = 'ns')
 
         self.scrollbar = tk.Scrollbar(self)
-        self.scrollbar.pack(fill = 'y', side = 'right')
+        self.scrollbar.grid(row = 0, column = 2, sticky = 'ns')
 
-        self.text.pack(fill = 'both', expand = True)
+        self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
+        self.x_scrollbar.grid(row = 1, column = 1, columnspan = 2, sticky = 'ew')
+
+        self.text['xscrollcommand'] = self.x_scrollbar.set
+        self.x_scrollbar.config(command = self.text.xview)
+
+        self.text.grid(row = 0, column = 1, sticky = 'nsew')
 
         self.text['yscrollcommand'] = self.scrollbar.set
         self.scrollbar.config(command = self.line_number_bar.scroll)
@@ -231,6 +231,7 @@ class TextTab(tk.Frame):
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
+        self.text.bind('<Configure>', self._is_out_of_text)
 
         # For the line number bar
         self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number)
@@ -253,6 +254,8 @@ class TextTab(tk.Frame):
         self.menu.add_command(label = '复制', accelerator = 'Ctrl+C', command = self.copy)
         self.menu.add_command(label = '剪切', accelerator = 'Ctrl+X', command = self.cut)
         self.menu.add_command(label = '粘贴', accelerator = 'Ctrl+V', command = self.paste)
+        self.menu.add_separator()
+        self.menu.add_command(label = '复制当前文件路径', command = self.copy_file_path)
 
     def _popup_menu(self, event: tk.Event) -> None:
 
@@ -262,6 +265,7 @@ class TextTab(tk.Frame):
 
         # Wait until entering successfully.
         self.after(1, self.line_number_bar.update_line_number)
+        self._is_out_of_text(event)  # Any-KeyPress can bind only one.
 
     def _delay_to_highlight(self, event: tk.Event) -> None:
 
@@ -269,6 +273,13 @@ class TextTab(tk.Frame):
         self.after(1, self.line_number_bar.update_highlight_current_line)
 
     def _ctrl_o(self, event: tk.Event) -> None: return None  # Tkinter has bound ctrl+o inside "Text".
+
+    def _is_out_of_text(self, event: tk.Event) -> None:
+
+        if event.widget.xview() != (0.0, 1.0):
+            self.x_scrollbar.grid()
+        else:
+            self.x_scrollbar.grid_remove()
 
     def _no_clicking_line_number_bar(self, event: tk.Event) -> str: return 'break'
 
@@ -294,7 +305,7 @@ class TextTab(tk.Frame):
             sel_text = self.text.get('sel.first', 'sel.last')
 
             clipboard.copy(sel_text)
-        except: pass
+        except tk.TclError: pass
 
     def cut(self, event: Optional[tk.Event] = None) -> None:
 
@@ -304,7 +315,7 @@ class TextTab(tk.Frame):
             self.text.delete('sel.first', 'sel.last')
 
             self.line_number_bar.update_line_number()
-        except: pass
+        except tk.TclError: pass
 
     def paste(self, event: Optional[tk.Event] = None) -> None:
 
@@ -312,7 +323,7 @@ class TextTab(tk.Frame):
 
         try:
             self.text.delete('sel.first', 'sel.last')
-        except: pass
+        except tk.TclError: pass
 
         self.text.insert('insert', text_from_clipboard)
 
@@ -321,3 +332,7 @@ class TextTab(tk.Frame):
     def select_all(self, event: Optional[tk.Event] = None) -> None:
 
         self.text.event_generate('<<SelectAll>>')
+
+    def copy_file_path(self) -> None:
+
+        clipboard.copy(self.path)
