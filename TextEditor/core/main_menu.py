@@ -8,6 +8,8 @@ class MainMenu(tk.Menu):
 
         self.main_notebook = master.custom_notebook
 
+        self['postcommand'] = self._change_status_of_options
+
         # File
         self.file_option = tk.Menu(self, tearoff = False)
 
@@ -78,3 +80,16 @@ class MainMenu(tk.Menu):
         )
 
         self.add_cascade(label = '编辑', menu = self.edit_option)
+
+    def _change_status_of_options(self) -> None:
+
+        if not self.main_notebook.tabs():
+            for each in ['关闭', '保存', '另存为...']:
+                self.file_option.entryconfig(each, state = 'disabled')
+            for each in ['撤销', '重做', '复制', '剪切', '粘贴', '全选']:
+                self.edit_option.entryconfig(each, state = 'disabled')
+        else:
+            for each in ['关闭', '保存', '另存为...']:
+                self.file_option.entryconfig(each, state = 'normal')
+            for each in ['撤销', '重做', '复制', '剪切', '粘贴', '全选']:
+                self.edit_option.entryconfig(each, state = 'normal')
