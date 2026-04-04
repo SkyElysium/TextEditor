@@ -65,7 +65,8 @@ class CustomNotebook(ttk.Notebook):
 
     def add_tab(self, event: Optional[tk.Event] = None, tab_name: str = '未命名') -> TextTab:
 
-        text_tab = TextTab()
+        text_tab = TextTab(self)
+        text_tab.label = tab_name
 
         self.add(text_tab, text = tab_name)
 
@@ -110,11 +111,15 @@ class CustomNotebook(ttk.Notebook):
         except UnicodeDecodeError:
             messagebox.showerror(
                 title = '错误',
-                message = '无法打开此文件'
+                message = '无法打开此文件，因为格式不兼容'
             )
+
+            return
 
         text_tab.path = path
         text_tab.label = file.name
+
+        text_tab.text.edit_modified(False)
 
         text_tab.line_number_bar.update_line_number()
 
@@ -129,7 +134,9 @@ class CustomNotebook(ttk.Notebook):
         text = text_tab.text.get('1.0', 'end-1c')  # No self adding "new line".
 
         file = Path(text_tab.path)
-        file.write_text(text, encoding = 'utf-8')
+        file.write_text(text.replace('\r\n', '\n').replace('\r', '\n'), encoding = 'utf-8')
+
+        text_tab.text.edit_modified(False)
 
     def save_file_as(self, event: Optional[tk.Event] = None) -> None:
 
@@ -159,17 +166,19 @@ class CustomNotebook(ttk.Notebook):
 
         self.save_file()
 
-        self.tab('current', text = text_tab.label)
+        self.tab(text_tab, text = text_tab.label)
 
 
 class TextTab(tk.Frame):
-    def __init__(self) -> None:
+    def __init__(self, master) -> None:
 
-        super().__init__()
+        super().__init__(master)
+
+        self.notebook = master
 
         # Tab config
         self.path = ''
-        self.label = ''
+        self.label = ''  # A variable displayed on tab, only used in "save_as".
 
         self.grid_columnconfigure(1, weight = 1)
         self.grid_rowconfigure(0, weight = 1)
@@ -232,6 +241,7 @@ class TextTab(tk.Frame):
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
         self.text.bind('<Configure>', self._is_out_of_text)
+        self.text.bind('<<Modified>>', self._text_is_changed)
 
         # For the line number bar
         self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number)
@@ -265,7 +275,7 @@ class TextTab(tk.Frame):
 
         # Wait until entering successfully.
         self.after(1, self.line_number_bar.update_line_number)
-        self._is_out_of_text(event)  # Any-KeyPress can bind only one.
+        self.after(1, self._is_out_of_text)  # Any-KeyPress can bind only one.
 
     def _delay_to_highlight(self, event: tk.Event) -> None:
 
@@ -274,12 +284,19 @@ class TextTab(tk.Frame):
 
     def _ctrl_o(self, event: tk.Event) -> None: return None  # Tkinter has bound ctrl+o inside "Text".
 
-    def _is_out_of_text(self, event: tk.Event) -> None:
+    def _is_out_of_text(self, event: Optional[tk.Event] = None) -> None:
 
-        if event.widget.xview() != (0.0, 1.0):
+        if self.text.xview() != (0.0, 1.0):
             self.x_scrollbar.grid()
         else:
             self.x_scrollbar.grid_remove()
+
+    def _text_is_changed(self, event: tk.Event) -> None:
+
+        if self.text.edit_modified():
+            self.notebook.tab(self, text = f'*{self.label}')
+        else:
+            self.notebook.tab(self, text = self.label)
 
     def _no_clicking_line_number_bar(self, event: tk.Event) -> str: return 'break'
 
@@ -292,12 +309,14 @@ class TextTab(tk.Frame):
         self.text.event_generate('<<Undo>>')
 
         self.line_number_bar.update_line_number()
+        self._is_out_of_text()
 
     def redo(self, event: Optional[tk.Event] = None) -> None:
 
         self.text.event_generate('<<Redo>>')
 
         self.line_number_bar.update_line_number()
+        self._is_out_of_text()
 
     def copy(self, event: Optional[tk.Event] = None) -> None:
 
@@ -315,6 +334,7 @@ class TextTab(tk.Frame):
             self.text.delete('sel.first', 'sel.last')
 
             self.line_number_bar.update_line_number()
+            self._is_out_of_text()
         except tk.TclError: pass
 
     def paste(self, event: Optional[tk.Event] = None) -> None:
@@ -328,6 +348,7 @@ class TextTab(tk.Frame):
         self.text.insert('insert', text_from_clipboard)
 
         self.line_number_bar.update_line_number()
+        self._is_out_of_text()
 
     def select_all(self, event: Optional[tk.Event] = None) -> None:
 

@@ -1,4 +1,6 @@
+import sys
 import tkinter as tk
+from tkinter import messagebox
 
 from core.config import *
 from core.main_menu import MainMenu
@@ -33,3 +35,22 @@ class Editor(tk.Tk):
             if not shortcut.istitle(): self.bind(shortcut.title(), method)
 
             self.bind(shortcut, method)
+
+        self.protocol('WM_DELETE_WINDOW', self._exiting)
+
+    def _exiting(self):
+        saving_result = []
+
+        for tab_id in self.custom_notebook.tabs():
+            saving_result.append(self.custom_notebook.nametowidget(tab_id).text.edit_modified())
+
+        if any(saving_result):
+            reply = messagebox.askyesnocancel(
+                title = '存在未保存的文件',
+                message = '在关闭程序前手动保存所有文件？'
+            )
+            if reply: pass
+            elif reply == False: sys.exit()
+            else: pass
+        else:
+            sys.exit()
