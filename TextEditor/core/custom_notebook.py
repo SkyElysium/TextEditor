@@ -123,7 +123,7 @@ class CustomNotebook(ttk.Notebook):
 
         text_tab.line_number_bar.update_line_number()
 
-    def save_file(self, event: Optional[tk.Event] = None) -> None:
+    def save_file(self, event: Optional[tk.Event] = None, path: str = '') -> None:
 
         _, text_tab = self.get_tab()
 
@@ -134,7 +134,7 @@ class CustomNotebook(ttk.Notebook):
         text = text_tab.text.get('1.0', 'end-1c')  # No self adding "new line".
 
         file = Path(text_tab.path)
-        file.write_text(text.replace('\r\n', '\n').replace('\r', '\n'), encoding = 'utf-8')
+        file.write_text(text, encoding = 'utf-8')
 
         text_tab.text.edit_modified(False)
 
@@ -189,7 +189,9 @@ class TextTab(tk.Frame):
             wrap = 'none',
             undo = True,
             bd = False,
-            font = ('Consolas', 13)
+            font = ('Consolas', 13),
+            selectbackground = '#d3e9fc',
+            selectforeground = 'black'
         )
 
         self.line_number_bar = LineNumberBar(self)
@@ -259,7 +261,7 @@ class TextTab(tk.Frame):
 
     def right_click_menu(self) -> None:
 
-        self.menu = tk.Menu(self, tearoff = False)
+        self.menu = tk.Menu(self, tearoff = False, activeforeground = 'black', activebackground = '#91c9f7')
 
         self.menu.add_command(label = '复制', accelerator = 'Ctrl+C', command = self.copy)
         self.menu.add_command(label = '剪切', accelerator = 'Ctrl+X', command = self.cut)
@@ -339,7 +341,7 @@ class TextTab(tk.Frame):
 
     def paste(self, event: Optional[tk.Event] = None) -> None:
 
-        text_from_clipboard = clipboard.paste()
+        text_from_clipboard = clipboard.paste().replace('\r\n', '\n')
 
         try:
             self.text.delete('sel.first', 'sel.last')

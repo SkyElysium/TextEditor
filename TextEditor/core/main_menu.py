@@ -11,7 +11,12 @@ class MainMenu(tk.Menu):
         self['postcommand'] = self._change_status_of_options
 
         # File
-        self.file_option = tk.Menu(self, tearoff = False)
+        self.file_option = tk.Menu(
+            self,
+            tearoff = False,
+            activeforeground = 'black',
+            activebackground = '#91c9f7'
+        )
 
         self.file_option.add_command(
             label = '新建',
@@ -44,7 +49,12 @@ class MainMenu(tk.Menu):
         self.add_cascade(label = '文件', menu = self.file_option)
 
         # Edit
-        self.edit_option = tk.Menu(self, tearoff = False)
+        self.edit_option = tk.Menu(
+            self,
+            tearoff = False,
+            activeforeground = 'black',
+            activebackground = '#91c9f7'
+        )
 
         self.edit_option.add_command(
             label = '撤销',
