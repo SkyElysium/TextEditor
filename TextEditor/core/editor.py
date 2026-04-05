@@ -38,7 +38,7 @@ class Editor(tk.Tk):
 
         self.protocol('WM_DELETE_WINDOW', self._exiting)
 
-    def _exiting(self):
+    def _exiting(self) -> None:
         saving_result = []
 
         for tab_id in self.custom_notebook.tabs():
