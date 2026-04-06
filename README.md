@@ -7,9 +7,10 @@
 
 ### **依赖**:
 
-- os
-- tkinter (ttk)
-- clipboard
+- *os , sys*
+- *typing , \_\_future\_\_*
+- ***tkinter (ttk)***
+- *clipboard*
 
 **可能需要安装的库**:
 
