@@ -71,6 +71,7 @@ class CustomNotebook(ttk.Notebook):
         self.add(text_tab, text = tab_name)
 
         text_tab.line_number_bar.update_line_number()
+        self.select(text_tab)
 
         return text_tab
 
@@ -166,7 +167,7 @@ class CustomNotebook(ttk.Notebook):
 
         self.save_file()
 
-        self.tab(text_tab, text = text_tab.label)
+        self.tab(tab, text = text_tab.label)
 
 
 class TextTab(tk.Frame):
@@ -296,9 +297,9 @@ class TextTab(tk.Frame):
     def _text_is_changed(self, event: tk.Event) -> None:
 
         if self.text.edit_modified():
-            self.notebook.tab(self, text = f'*{self.label}')
+            self.notebook.tab(self.notebook.get_tab()[0], text = f'*{self.label}')
         else:
-            self.notebook.tab(self, text = self.label)
+            self.notebook.tab(self.notebook.get_tab()[0], text = self.label)
 
     def _no_clicking_line_number_bar(self, event: tk.Event) -> str: return 'break'
 
