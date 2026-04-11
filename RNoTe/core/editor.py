@@ -15,6 +15,8 @@ class Editor(tk.Tk):
         self.title(MAIN_WINDOW_TITLE)
         self.geometry(MAIN_WINDOW_SIZE)
 
+        self.iconphoto(False, tk.PhotoImage(file = 'data/icon.png'))
+
         self.custom_notebook = CustomNotebook(self)
         self.custom_notebook.pack(fill = 'both', expand = True)
 
