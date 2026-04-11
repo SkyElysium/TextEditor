@@ -1,4 +1,4 @@
-# RNoTe (Rate NoTe & Text)
+# ![](RNoTe/data/icon.png) | RNoTe (Rate NoTe & Text)
 
 ![Static Badge](https://img.shields.io/badge/Python版本-3.8.9-brightgreen?style=flat)
 ![Static Badge](https://img.shields.io/badge/版本-v26.4.11-cyan?style=flat)
