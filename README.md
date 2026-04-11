@@ -1,10 +1,10 @@
-# TextEditor
+# RNoTe (Rate NoTe & Text)
 
 ![Static Badge](https://img.shields.io/badge/Python版本-3.8.9-brightgreen?style=flat)
 ![Static Badge](https://img.shields.io/badge/版本-v26.4.11-cyan?style=flat)
 ![Static Badge](https://img.shields.io/badge/许可证-MIT_License-blue?style=flat)
 
-由Tkinter构建的编辑器项目，旨在构建笔记软件和编辑器的混合体。
+由 Tkinter 构建的编辑器项目，旨在构建笔记软件和编辑器的混合体。
 
 ## 依赖项：
 
