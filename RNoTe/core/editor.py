@@ -48,8 +48,8 @@ class Editor(tk.Tk):
 
         if any(saving_result):
             reply = messagebox.askyesnocancel(
-                title = '存在未保存的文件',
-                message = '在关闭程序前手动保存所有文件？'
+                title = MAIN_WINDOW_TITLE,
+                message = '存在未保存的文件，在关闭程序前手动保存所有文件？'
             )
             if reply: pass
             elif reply == False: sys.exit()
