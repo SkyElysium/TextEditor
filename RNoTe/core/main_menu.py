@@ -10,6 +10,10 @@ class MainMenu(tk.Menu):
 
         self['postcommand'] = self._change_status_of_options
 
+        # Options needed to check the status in "_change_status_of_options"
+        self.file_option_checklist = ['关闭', '保存', '另存为...']
+        self.edit_option_checklist = ['撤销', '重做', '复制', '剪切', '粘贴', '全选']
+
         # File
         self.file_option = tk.Menu(
             self,
@@ -94,12 +98,12 @@ class MainMenu(tk.Menu):
     def _change_status_of_options(self) -> None:
 
         if not self.main_notebook.tabs():
-            for each in ['关闭', '保存', '另存为...']:
+            for each in self.file_option_checklist:
                 self.file_option.entryconfig(each, state = 'disabled')
-            for each in ['撤销', '重做', '复制', '剪切', '粘贴', '全选']:
+            for each in self.edit_option_checklist:
                 self.edit_option.entryconfig(each, state = 'disabled')
         else:
-            for each in ['关闭', '保存', '另存为...']:
+            for each in self.file_option_checklist:
                 self.file_option.entryconfig(each, state = 'normal')
-            for each in ['撤销', '重做', '复制', '剪切', '粘贴', '全选']:
+            for each in self.edit_option_checklist:
                 self.edit_option.entryconfig(each, state = 'normal')

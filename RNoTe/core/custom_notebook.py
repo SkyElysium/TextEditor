@@ -111,8 +111,8 @@ class CustomNotebook(ttk.Notebook):
             text_tab.text.insert('end', text)
         except UnicodeDecodeError:
             messagebox.showerror(
-                title = '错误',
-                message = '无法打开此文件，因为格式不兼容'
+                title = MAIN_WINDOW_TITLE,
+                message = '无法打开此文件，因为不是UTF-8格式或者这是一个程序文件'
             )
 
             return
