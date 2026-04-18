@@ -6,14 +6,6 @@
 
 由 Tkinter 构建的编辑器项目，旨在构建笔记软件和编辑器的混合体。
 
-## 依赖项：
-
-- `os`
-- `sys`
-- `typing`
-- `__future__`
-- `tkinter (ttk)`
-
 ## 更新日志：
 
 - [x] 内存优化：https://github.com/SkyElysium/TextEditor/issues/1
