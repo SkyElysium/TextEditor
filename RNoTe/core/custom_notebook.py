@@ -50,7 +50,7 @@ class CustomNotebook(ttk.Notebook):
                 )
                 if reply:
                     if self.save_file(file_path = self.nametowidget(tab).path) == 'NotSaved': return
-                if reply == None: return
+                if reply is None: return
 
             self.remove_tab(tab_id = tab_id)
 
@@ -138,7 +138,6 @@ class CustomNotebook(ttk.Notebook):
     def save_file(self, event: Optional[tk.Event] = None, file_path: str = '') -> Optional[str]:
 
         _, text_tab = self.get_tab()
-        file = ''
 
         if file_path:
             file = Path(file_path)
