@@ -13,13 +13,6 @@
 - `typing`
 - `__future__`
 - `tkinter (ttk)`
-- `clipboard` -> 用于解决Tkinter无法真正保存内容到剪贴板
-
-## 安装部分依赖：
-
-```
-pip install clipboard
-```
 
 ## 更新日志：
 
