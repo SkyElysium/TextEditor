@@ -7,6 +7,7 @@ class MainMenu(tk.Menu):
         super().__init__(master)
 
         self.main_notebook = master.custom_notebook
+        self.master = master
 
         self['postcommand'] = self._change_status_of_options
 
@@ -48,6 +49,12 @@ class MainMenu(tk.Menu):
             label = '关闭',
             accelerator = 'Ctrl+F4',
             command = self.main_notebook.remove_tab
+        )
+        self.file_option.add_separator()
+        self.file_option.add_command(
+            label = '退出',
+            accelerator = 'Alt+F4',
+            command = self.master._exiting
         )
 
         self.add_cascade(label = '文件', menu = self.file_option)
@@ -97,13 +104,9 @@ class MainMenu(tk.Menu):
 
     def _change_status_of_options(self) -> None:
 
-        if not self.main_notebook.tabs():
-            for each in self.file_option_checklist:
-                self.file_option.entryconfig(each, state = 'disabled')
-            for each in self.edit_option_checklist:
-                self.edit_option.entryconfig(each, state = 'disabled')
-        else:
-            for each in self.file_option_checklist:
-                self.file_option.entryconfig(each, state = 'normal')
-            for each in self.edit_option_checklist:
-                self.edit_option.entryconfig(each, state = 'normal')
+        status = 'disabled' if not self.main_notebook.tabs() else 'normal'
+
+        for each in self.file_option_checklist:
+            self.file_option.entryconfig(each, state = status)
+        for each in self.edit_option_checklist:
+            self.edit_option.entryconfig(each, state = status)
