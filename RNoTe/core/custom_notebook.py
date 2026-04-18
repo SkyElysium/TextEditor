@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Tuple
 
-import clipboard
 import tkinter as tk
 import tkinter.ttk as ttk
 
@@ -41,7 +40,19 @@ class CustomNotebook(ttk.Notebook):
     def _on_pressing_close(self, event: tk.Event) -> None:
 
         if self.identify(event.x, event.y) == 'close':
-            self.remove_tab(tab_id = f'@{event.x}, {event.y}')
+            tab_id = f'@{event.x}, {event.y}'
+            tab = self.tabs()[self.index(tab_id)]
+
+            if self.nametowidget(tab).text.edit_modified():
+                reply = messagebox.askyesnocancel(
+                    title = MAIN_WINDOW_TITLE,
+                    message = '是否在关闭之前保存文件？'
+                )
+                if reply:
+                    if self.save_file(file_path = self.nametowidget(tab).path) == 'NotSaved': return
+                if reply == None: return
+
+            self.remove_tab(tab_id = tab_id)
 
     def _move_selected_tab(self, event: tk.Event) -> None:
 
@@ -124,17 +135,20 @@ class CustomNotebook(ttk.Notebook):
 
         text_tab.line_number_bar.update_line_number()
 
-    def save_file(self, event: Optional[tk.Event] = None, path: str = '') -> None:
+    def save_file(self, event: Optional[tk.Event] = None, file_path: str = '') -> Optional[str]:
 
         _, text_tab = self.get_tab()
+        file = ''
 
-        if not text_tab.path:
+        if file_path:
+            file = Path(file_path)
+        elif text_tab.path:
+            file = Path(text_tab.path)
+        else:
             self.save_file_as()
-            if not text_tab.path: return
+            if not text_tab.path: return 'NotSaved'
 
         text = text_tab.text.get('1.0', 'end-1c')  # No self adding "new line".
-
-        file = Path(text_tab.path)
         file.write_text(text, encoding = 'utf-8')
 
         text_tab.text.edit_modified(False)
@@ -151,14 +165,8 @@ class CustomNotebook(ttk.Notebook):
 
         tab, text_tab = self.get_tab()
 
-        if text_tab.path:
-            # When the file has been, enter this fork.
-            temp = text_tab.path
-            text_tab.path = path
-
-            self.save_file()
-
-            text_tab.path = temp
+        if text_tab.path:  # When the file has been, enter this fork.
+            self.save_file(file_path = path)
 
             return
 
@@ -213,33 +221,6 @@ class TextTab(tk.Frame):
         self.scrollbar.config(command = self.line_number_bar.scroll)
 
         self.right_click_menu()
-
-        # Reimplement these methods below inside the class.
-        for event in [
-            '<<Undo>>',
-            '<<Redo>>',
-            '<<Copy>>',
-            '<<Cut>>',
-            '<<Paste>>',
-            '<<SelectAll>>'
-        ]:
-            for key in self.text.event_info(event):
-                self.text.event_delete(event, key)
-
-        # Binding part
-        binding_dict = {
-            '<Control-z>': self.undo,
-            '<Control-Shift-z>': self.redo,
-            '<Control-c>': self.copy,
-            '<Control-x>': self.cut,
-            '<Control-v>': self.paste,
-            '<Control-a>': self.select_all
-        }
-
-        for shortcut, method in binding_dict.items():
-            if not shortcut.istitle(): self.text.bind(shortcut.title(), method)
-
-            self.text.bind(shortcut, method)
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
@@ -311,56 +292,47 @@ class TextTab(tk.Frame):
 
         self.line_number_bar.scroll_when_selecting()
 
-    def undo(self, event: Optional[tk.Event] = None) -> None:
+    def copy(self) -> None:
 
-        self.text.event_generate('<<Undo>>')
+        self.text.event_generate('<<Copy>>')
 
-        self.line_number_bar.update_line_number()
-        self._is_out_of_text()
+        self._update_ui()
 
-    def redo(self, event: Optional[tk.Event] = None) -> None:
+    def cut(self) -> None:
 
-        self.text.event_generate('<<Redo>>')
+        self.text.event_generate('<<Cut>>')
 
-        self.line_number_bar.update_line_number()
-        self._is_out_of_text()
+        self._update_ui()
 
-    def copy(self, event: Optional[tk.Event] = None) -> None:
+    def paste(self) -> None:
 
-        try:
-            sel_text = self.text.get('sel.first', 'sel.last')
+        self.text.event_generate('<<Paste>>')
 
-            clipboard.copy(sel_text)
-        except tk.TclError: pass
+        self._update_ui()
 
-    def cut(self, event: Optional[tk.Event] = None) -> None:
-
-        try:
-            self.copy()
-
-            self.text.delete('sel.first', 'sel.last')
-
-            self.line_number_bar.update_line_number()
-            self._is_out_of_text()
-        except tk.TclError: pass
-
-    def paste(self, event: Optional[tk.Event] = None) -> None:
-
-        text_from_clipboard = clipboard.paste().replace('\r\n', '\n')
-
-        try:
-            self.text.delete('sel.first', 'sel.last')
-        except tk.TclError: pass
-
-        self.text.insert('insert', text_from_clipboard)
-
-        self.line_number_bar.update_line_number()
-        self._is_out_of_text()
-
-    def select_all(self, event: Optional[tk.Event] = None) -> None:
+    def select_all(self) -> None:
 
         self.text.event_generate('<<SelectAll>>')
 
+        self._update_ui()
+
+    def undo(self) -> None:
+
+        self.text.event_generate('<<Undo>>')
+
+        self._update_ui()
+
+    def redo(self) -> None:
+
+        self.text.event_generate('<<Redo>>')
+
+        self._update_ui()
+
+    def _update_ui(self) -> None:
+
+        self.line_number_bar.update_line_number()
+        self._is_out_of_text()
+
     def copy_file_path(self) -> None:
 
-        clipboard.copy(self.path)
+        self.notebook.main_window.clipboard_append(self.path)

@@ -51,8 +51,8 @@ class Editor(tk.Tk):
                 title = MAIN_WINDOW_TITLE,
                 message = '存在未保存的文件，在关闭程序前手动保存所有文件？'
             )
-            if reply: pass
-            elif reply == False: sys.exit()
-            else: pass
-        else:
-            sys.exit()
+            if reply: return
+            elif reply == None: return
+
+        self.update()  # To make sure the clipboard has been saved.
+        sys.exit()

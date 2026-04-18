@@ -45,8 +45,11 @@ class LineNumberBar(tk.Text):
 
     def update_line_number(self) -> None:
 
-        # flow: count(1.0, 1+end) -> ... , draw(1) add(line) -> ...
-        # continue form here: self.text.bind('<Map>', lambda e: print(self.text.count('1.0', 'end',  'displaylines')))
+        """
+        TODO: flow: count(1.0, 1+end) -> ... , draw(1) add(line) -> ...
+        self.text.bind('<Map>', lambda e: print(self.text.count('1.0', 'end',  'displaylines')))
+        """
+
         line_num = self.tab_text.index('end').split('.')[0]
 
         line_num_text = '\n'.join([str(num) for num in range(1, int(line_num))])
