@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['main.py',
+    ['RNoTe/main.py',
     'RNoTe/core/config.py',
     'RNoTe/core/custom_notebook.py',
     'RNoTe/core/editor.py',
