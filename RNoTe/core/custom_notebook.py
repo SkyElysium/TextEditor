@@ -123,7 +123,7 @@ class CustomNotebook(ttk.Notebook):
         except UnicodeDecodeError:
             messagebox.showerror(
                 title = MAIN_WINDOW_TITLE,
-                message = '无法打开此文件，因为不是UTF-8格式或者这是一个程序文件'
+                message = '无法打开此文件，因为不是 UTF-8 格式，或者这是一个程序文件'
             )
 
             return
@@ -211,6 +211,7 @@ class TextTab(tk.Frame):
         self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
         self.x_scrollbar.grid(row = 1, column = 1, columnspan = 2, sticky = 'ew')
 
+        # TODO: better way of scrolling (about set)
         self.text['xscrollcommand'] = self.x_scrollbar.set
         self.x_scrollbar.config(command = self.text.xview)
 
@@ -223,12 +224,15 @@ class TextTab(tk.Frame):
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
+
         self.text.bind('<Configure>', self._is_out_of_text)
+        self.text.bind('<Any-KeyPress>', self._delay_to_detect_text)
+
         self.text.bind('<<Modified>>', self._text_is_changed)
 
         # For the line number bar
-        self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number)
-        self.text.bind('<Any-KeyPress>', self._delay_to_detect_text, add = '+')
+        self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number, add = '+')
+
         self.text.bind('<<Selection>>', self._selecting_scrolling)
 
         self.text.bind('<MouseWheel>', self.line_number_bar.wheel)
@@ -253,10 +257,16 @@ class TextTab(tk.Frame):
 
     def _popup_menu(self, event: tk.Event) -> None:
 
+        self.text.focus_set()
+        self.text.mark_set('insert', f'@{event.x}, {event.y}')
+
+        self._delay_to_highlight()
+
         self.menu.post(event.x_root, event.y_root)
 
     def _delay_to_detect_text(self, event: tk.Event) -> None:
 
+        # Wait until pressing successfully.
         self.after(1, self._is_out_of_text)
 
     def _delay_to_update_line_number(self, event: tk.Event) -> None:
@@ -264,7 +274,7 @@ class TextTab(tk.Frame):
         # Wait until entering successfully.
         self.after(1, self.line_number_bar.update_line_number)
 
-    def _delay_to_highlight(self, event: tk.Event) -> None:
+    def _delay_to_highlight(self, event: Optional[tk.Event] = None) -> None:
 
         # Wait until clicking successfully.
         self.after(1, self.line_number_bar.update_highlight_current_line)
@@ -334,4 +344,5 @@ class TextTab(tk.Frame):
 
     def copy_file_path(self) -> None:
 
+        self.notebook.main_window.clipboard_clear()
         self.notebook.main_window.clipboard_append(self.path)
