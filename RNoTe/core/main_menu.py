@@ -9,9 +9,12 @@ class MainMenu(tk.Menu):
         self.main_notebook = master.custom_notebook
         self.master = master
 
+        self.is_wrap = tk.StringVar()
+        self.is_wrap.set('none')
+
         self['postcommand'] = self._change_status_of_options
 
-        # Options needed to check the status in "_change_status_of_options"
+        # Options that needs checking the status in "_change_status_of_options"
         self.file_option_checklist = ['关闭', '保存', '另存为...']
         self.edit_option_checklist = ['撤销', '重做', '复制', '剪切', '粘贴', '全选']
 
@@ -101,6 +104,46 @@ class MainMenu(tk.Menu):
         )
 
         self.add_cascade(label = '编辑', menu = self.edit_option)
+
+        # View
+        self.view_option = tk.Menu(
+            self,
+            tearoff = False,
+            activeforeground = 'black',
+            activebackground = '#91c9f7'
+        )
+
+        self.view_option.add_checkbutton(
+            label = '自动换行',
+            variable = self.is_wrap,
+            onvalue = 'char',
+            offvalue = 'none'
+        )
+
+        # Zoom in View
+        '''TODO: self.zoom_option = tk.Menu(
+            self.view_option,
+            tearoff = False,
+            activeforeground = 'black',
+            activebackground = '#91c9f7'
+        )
+
+        self.zoom_option.add_command(
+            label = '放大',
+            accelerator = 'Ctrl++'
+        )
+        self.zoom_option.add_command(
+            label = '缩小',
+            accelerator = 'Ctrl--'
+        )
+        self.zoom_option.add_command(
+            label = '恢复默认大小'
+        )
+
+        self.view_option.add_cascade(label = '缩放', menu = self.zoom_option)'''
+        # Zoom End
+
+        self.add_cascade(label = '视图', menu = self.view_option)
 
     def _change_status_of_options(self) -> None:
 

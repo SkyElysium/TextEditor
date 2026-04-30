@@ -81,7 +81,6 @@ class CustomNotebook(ttk.Notebook):
 
         self.add(text_tab, text = tab_name)
 
-        text_tab.line_number_bar.update_line_number()
         self.select(text_tab)
 
         return text_tab
@@ -132,8 +131,6 @@ class CustomNotebook(ttk.Notebook):
         text_tab.label = file.name
 
         text_tab.text.edit_modified(False)
-
-        text_tab.line_number_bar.update_line_number()
 
     def save_file(self, event: Optional[tk.Event] = None, file_path: str = '') -> Optional[str]:
 
@@ -192,15 +189,24 @@ class TextTab(tk.Frame):
         self.grid_rowconfigure(0, weight = 1)
 
         # Wigets
+        is_wrap = self.notebook.main_window.main_menu.is_wrap
+
         self.text = tk.Text(
             self,
-            wrap = 'none',
+            wrap = is_wrap.get(),
             undo = True,
             bd = False,
             font = ('Consolas', 13),
             selectbackground = '#d3e9fc',
             selectforeground = 'black'
         )
+
+        def change_wrap(*args) -> None:
+
+            self.text.config(wrap = is_wrap.get())
+            self.line_number_bar.update_line_number()
+
+        is_wrap.trace('w', change_wrap)
 
         self.line_number_bar = LineNumberBar(self)
         self.line_number_bar.grid(row = 0, column = 0, rowspan = 2, sticky = 'ns')
@@ -211,39 +217,54 @@ class TextTab(tk.Frame):
         self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
         self.x_scrollbar.grid(row = 1, column = 1, columnspan = 2, sticky = 'ew')
 
-        # TODO: better way of scrolling (about set)
         self.text['xscrollcommand'] = self.x_scrollbar.set
         self.x_scrollbar.config(command = self.text.xview)
 
         self.text.grid(row = 0, column = 1, sticky = 'nsew')
 
-        self.text['yscrollcommand'] = self.scrollbar.set
+        # Scroll both widgets.
+        def scroll_text(*xy: tuple) -> None:
+
+            self.scrollbar.set(*xy)
+            self.line_number_bar.yview_moveto(xy[0])
+
+        def scroll_line_number_bar(*xy: tuple) -> None:
+
+            self.scrollbar.set(*xy)
+            self.text.yview_moveto(xy[0])
+
+        self.text['yscrollcommand'] = scroll_text
+        self.line_number_bar['yscrollcommand'] = scroll_line_number_bar
+
         self.scrollbar.config(command = self.line_number_bar.scroll)
 
         self.right_click_menu()
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
-
         self.text.bind('<Configure>', self._is_out_of_text)
         self.text.bind('<Any-KeyPress>', self._delay_to_detect_text)
 
         self.text.bind('<<Modified>>', self._text_is_changed)
 
         # For the line number bar
+        def load_finish(event: tk.Event) -> None:
+
+            self.text.unbind('<Map>')
+            # NB: If "Text" is created in "add_tab", update line number twice,
+            # once in "open_file". (just below)
+            self._delay_to_update_line_number()
+
+            # The program will be laggy if binding this when "Text" doesn't finish loading.
+            self.text.bind('<Configure>', self._delay_to_update_line_number)
+
+        self.text.bind('<Map>', load_finish)
         self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number, add = '+')
-
-        self.text.bind('<<Selection>>', self._selecting_scrolling)
-
-        self.text.bind('<MouseWheel>', self.line_number_bar.wheel)
-        self.line_number_bar.bind('<MouseWheel>', self.line_number_bar.wheel)
 
         self.line_number_bar.bind('<Button-1>', self._no_clicking_line_number_bar)
 
         # For highlighting the current line
         self.text.bind('<Button-1>', self._delay_to_highlight)
-
-        self.line_number_bar.update_line_number()
 
     def right_click_menu(self) -> None:
 
@@ -269,7 +290,7 @@ class TextTab(tk.Frame):
         # Wait until pressing successfully.
         self.after(1, self._is_out_of_text)
 
-    def _delay_to_update_line_number(self, event: tk.Event) -> None:
+    def _delay_to_update_line_number(self, event: Optional[tk.Event] = None) -> None:
 
         # Wait until entering successfully.
         self.after(1, self.line_number_bar.update_line_number)
