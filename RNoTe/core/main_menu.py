@@ -9,9 +9,6 @@ class MainMenu(tk.Menu):
         self.main_notebook = master.custom_notebook
         self.master = master
 
-        self.is_wrap = tk.StringVar()
-        self.is_wrap.set('none')
-
         self['postcommand'] = self._change_status_of_options
 
         # Options that needs checking the status in "_change_status_of_options"
@@ -77,7 +74,7 @@ class MainMenu(tk.Menu):
         )
         self.edit_option.add_command(
             label = '重做',
-            accelerator = 'Ctrl+Shift+Z',
+            accelerator = 'Ctrl+Y',
             command = lambda : self.main_notebook.get_tab()[1].redo()
         )
         self.edit_option.add_separator()
@@ -111,13 +108,6 @@ class MainMenu(tk.Menu):
             tearoff = False,
             activeforeground = 'black',
             activebackground = '#91c9f7'
-        )
-
-        self.view_option.add_checkbutton(
-            label = '自动换行',
-            variable = self.is_wrap,
-            onvalue = 'char',
-            offvalue = 'none'
         )
 
         # Zoom in View

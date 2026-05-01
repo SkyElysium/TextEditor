@@ -28,14 +28,29 @@ class LineNumberBar(tk.Text):
         self.tab_text.yview(*xy)
         self.yview(*xy)
 
-    def update_line_number(self) -> None:
-        line_num = self.tab_text.count('1.0', 'end', 'displaylines')[0]
+    def scroll_when_selecting(self) -> None:
 
-        line_num_text = '\n'.join([str(num) for num in range(1, int(line_num) + 1)])
+        self.yview_moveto(self.tab_text.yview()[0])
+
+        self.update_highlight_current_line()
+
+    def wheel(self, event: tk.Event) -> None:
+
+        speed = int(-1 * (event.delta / 60))
+
+        self.yview_scroll(speed, 'units')
+        self.tab_text.yview_scroll(speed, 'units')
+
+        return 'break'
+
+    def update_line_number(self) -> None:
+        line_num = self.tab_text.index('end').split('.')[0]
+
+        line_num_text = '\n'.join([str(num) for num in range(1, int(line_num))])
 
         # Can't get out of the line number bar
-        if len(str(line_num)) > self.max_width:
-            self.config(width = len(str(line_num)))
+        if len(line_num) > self.max_width:
+            self.config(width = len(line_num))
         else:
             self.config(width = self.max_width)
 
@@ -52,14 +67,11 @@ class LineNumberBar(tk.Text):
 
         self.update_highlight_current_line()
 
-    def update_highlight_current_line(self) -> None:
+    def update_highlight_current_line(self, event: tk.Event = None) -> None:
 
         self.tag_remove('current_line', '1.0', 'end')
 
-        current_line = self.tab_text.count('1.0', 'insert', 'displaylines')
-
-        if current_line is None: current_line = 1
-        else: current_line = current_line[0] + 1
+        current_line = self.tab_text.index('insert').split('.')[0]
 
         start = f'{current_line}.0'
         end = f'{current_line}.end'
