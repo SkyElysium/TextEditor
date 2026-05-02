@@ -22,6 +22,7 @@ class MainMenu(tk.Menu):
         # Options that need checking the status in "_change_status_of_options"
         self.file_option_checklist = ['关闭', '保存', '另存为...']
         self.edit_option_checklist = ['撤销', '重做', '复制', '剪切', '粘贴', '全选']
+        self.view_option_checklist = ['放大', '缩小', '恢复默认大小']
 
         # File
         self.file_option = tk.Menu(
@@ -162,6 +163,8 @@ class MainMenu(tk.Menu):
             self.file_option.entryconfig(each, state = status)
         for each in self.edit_option_checklist:
             self.edit_option.entryconfig(each, state = status)
+        for each in self.view_option_checklist:
+            self.view_option.entryconfig(each, state = status)
 
     def _change_font_size(self, *args) -> None:
 

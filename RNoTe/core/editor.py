@@ -31,13 +31,13 @@ class Editor(tk.Tk):
             '<Control-s>'    : self.custom_notebook.save_file,
             '<Control-Alt-s>': self.custom_notebook.save_file_as,
             '<Control-F4>'   : self.custom_notebook.remove_tab,
-            '<Control-equal>' : self.main_menu.zoom_in_font,
+            '<Control-plus>' : self.main_menu.zoom_in_font,
             '<Control-minus>': self.main_menu.zoom_out_font
         }
 
         for shortcut, method in binding_dict.items():
             if (not shortcut.istitle()
-                and shortcut not in ['<Control-equal>', '<Control-minus>']):
+                and shortcut not in ['<Control-plus>', '<Control-minus>']):
                 self.bind(shortcut.title(), method)
 
             self.bind(shortcut, method)
