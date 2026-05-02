@@ -1,4 +1,6 @@
 import tkinter as tk
+import webbrowser
+from core.config import *
 
 
 class MainMenu(tk.Menu):
@@ -110,30 +112,38 @@ class MainMenu(tk.Menu):
             activebackground = '#91c9f7'
         )
 
-        # Zoom in View
-        '''TODO: self.zoom_option = tk.Menu(
-            self.view_option,
+        self.view_option.add_command(
+            label = '放大',
+            accelerator = 'Ctrl++'
+        )
+        self.view_option.add_command(
+            label = '缩小',
+            accelerator = 'Ctrl--'
+        )
+        self.view_option.add_command(
+            label = '恢复默认大小'
+        )
+
+        self.add_cascade(label = '视图', menu = self.view_option)
+
+        # About
+        self.about_option = tk.Menu(
+            self,
             tearoff = False,
             activeforeground = 'black',
             activebackground = '#91c9f7'
         )
 
-        self.zoom_option.add_command(
-            label = '放大',
-            accelerator = 'Ctrl++'
+        self.about_option.add_command(
+            label = '关于',
+            command = self._popup_about_dialog
         )
-        self.zoom_option.add_command(
-            label = '缩小',
-            accelerator = 'Ctrl--'
-        )
-        self.zoom_option.add_command(
-            label = '恢复默认大小'
+        self.about_option.add_command(
+            label = '报告问题',
+            command = self._link_to_issue
         )
 
-        self.view_option.add_cascade(label = '缩放', menu = self.zoom_option)'''
-        # Zoom End
-
-        self.add_cascade(label = '视图', menu = self.view_option)
+        self.add_cascade(label = '关于', menu = self.about_option)
 
     def _change_status_of_options(self) -> None:
 
@@ -143,3 +153,20 @@ class MainMenu(tk.Menu):
             self.file_option.entryconfig(each, state = status)
         for each in self.edit_option_checklist:
             self.edit_option.entryconfig(each, state = status)
+
+    def _popup_about_dialog(self) -> None:
+
+        dialog = tk.Toplevel(self.master)
+        dialog.title('关于RNoTe')
+        dialog.geometry('350x120')
+        dialog.iconphoto(True, tk.PhotoImage(file = 'data/icon.png'))
+
+        dialog.resizable(False, False)
+        dialog.grab_set()
+
+        info = tk.Message(dialog, text = INFO, width = 600)
+        info.pack()
+
+    def _link_to_issue(self) -> None:
+
+        webbrowser.open(ISSUE_URL)
