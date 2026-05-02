@@ -6,9 +6,12 @@ class LineNumberBar(tk.Text):
 
         super().__init__(master)
 
+        self.master = master
         self.tab_text = self.master.text
 
         self.max_width = 5
+
+        font_size = self.master.notebook.main_window.main_menu.font_size.get()
 
         self.config(
             width = self.max_width,
@@ -17,7 +20,7 @@ class LineNumberBar(tk.Text):
             state = 'disabled',
             cursor = 'arrow',
             bd = False,
-            font = ('Consolas', 13)
+            font = ('Consolas', font_size)
         )
 
         self.tag_config('center', justify = 'center')

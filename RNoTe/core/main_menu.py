@@ -1,5 +1,8 @@
+from typing import Optional
+
 import tkinter as tk
 import webbrowser
+
 from core.config import *
 
 
@@ -11,9 +14,12 @@ class MainMenu(tk.Menu):
         self.main_notebook = master.custom_notebook
         self.master = master
 
+        self.font_size = tk.IntVar(self, 13)
+        self.font_size.trace('w', self._change_font_size)
+
         self['postcommand'] = self._change_status_of_options
 
-        # Options that needs checking the status in "_change_status_of_options"
+        # Options that need checking the status in "_change_status_of_options"
         self.file_option_checklist = ['关闭', '保存', '另存为...']
         self.edit_option_checklist = ['撤销', '重做', '复制', '剪切', '粘贴', '全选']
 
@@ -114,14 +120,17 @@ class MainMenu(tk.Menu):
 
         self.view_option.add_command(
             label = '放大',
-            accelerator = 'Ctrl++'
+            accelerator = 'Ctrl++',
+            command = self.zoom_in_font
         )
         self.view_option.add_command(
             label = '缩小',
-            accelerator = 'Ctrl--'
+            accelerator = 'Ctrl--',
+            command = self.zoom_out_font
         )
         self.view_option.add_command(
-            label = '恢复默认大小'
+            label = '恢复默认大小',
+            command = lambda : self.font_size.set(13)
         )
 
         self.add_cascade(label = '视图', menu = self.view_option)
@@ -153,6 +162,26 @@ class MainMenu(tk.Menu):
             self.file_option.entryconfig(each, state = status)
         for each in self.edit_option_checklist:
             self.edit_option.entryconfig(each, state = status)
+
+    def _change_font_size(self, *args) -> None:
+
+        for tab_id in self.main_notebook.tabs():
+            tab = self.main_notebook.nametowidget(tab_id)
+
+            tab.line_number_bar.config(font = ('Consolas', self.font_size.get()))
+            tab.text.config(font = ('Consolas', self.font_size.get()))
+
+    def zoom_in_font(self, event: Optional[tk.Event] = None) -> None:
+
+        if self.font_size.get() == 60: return
+
+        self.font_size.set(self.font_size.get() + 1)
+
+    def zoom_out_font(self, event: Optional[tk.Event] = None) -> None:
+
+        if self.font_size.get() == 1: return
+
+        self.font_size.set(self.font_size.get() - 1)
 
     def _popup_about_dialog(self) -> None:
 

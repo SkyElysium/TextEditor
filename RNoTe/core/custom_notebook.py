@@ -190,12 +190,14 @@ class TextTab(tk.Frame):
         self.grid_rowconfigure(0, weight = 1)
 
         # Wigets
+        font_size = self.notebook.main_window.main_menu.font_size.get()
+
         self.text = tk.Text(
             self,
             wrap = 'none',
             undo = True,
             bd = False,
-            font = ('Consolas', 13),
+            font = ('Consolas', font_size),
             selectbackground = '#d3e9fc',
             selectforeground = 'black'
         )
@@ -207,7 +209,7 @@ class TextTab(tk.Frame):
         self.scrollbar.grid(row = 0, column = 2, sticky = 'ns')
 
         self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
-        self.x_scrollbar.grid(row = 1, column = 1, columnspan = 2, sticky = 'ew')
+        self.x_scrollbar.grid(row = 2, column = 0, columnspan = 2, sticky = 'ew')
 
         self.text['xscrollcommand'] = self.x_scrollbar.set
         self.x_scrollbar.config(command = self.text.xview)
@@ -229,6 +231,7 @@ class TextTab(tk.Frame):
 
         # For the line number bar
         self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number, add = '+')
+        self.text.bind('<B2-Motion>', self._selecting_scrolling)
 
         self.line_number_bar.bind('<Button-1>', self._no_clicking_line_number_bar)
 
@@ -296,7 +299,8 @@ class TextTab(tk.Frame):
 
     def _selecting_scrolling(self, event: tk.Event) -> None:
 
-        self.line_number_bar.scroll_when_selecting()
+        # Important in B2-Motion for not strange yview.
+        self.after(1, self.line_number_bar.scroll_when_selecting)
 
     def copy(self) -> None:
 
