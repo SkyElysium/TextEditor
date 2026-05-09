@@ -63,7 +63,7 @@ class MainMenu(tk.Menu):
         self.file_option.add_command(
             label = '退出',
             accelerator = 'Alt+F4',
-            command = self.master._exiting
+            command = self.master.exiting
         )
 
         self.add_cascade(label = '文件', menu = self.file_option)
@@ -126,7 +126,7 @@ class MainMenu(tk.Menu):
         )
         self.view_option.add_command(
             label = '缩小',
-            accelerator = 'Ctrl--',
+            accelerator = 'Ctrl+-',
             command = self.zoom_out_font
         )
         self.view_option.add_command(
@@ -188,13 +188,19 @@ class MainMenu(tk.Menu):
 
     def _popup_about_dialog(self) -> None:
 
-        dialog = tk.Toplevel(self.master)
+        dialog = tk.Toplevel()
         dialog.title('关于RNoTe')
-        dialog.geometry('350x120')
         dialog.iconphoto(True, tk.PhotoImage(file = 'data/icon.png'))
 
+        x, y = self.master.winfo_x(), self.master.winfo_y()
+        dialog.geometry('350x120')
+        dialog.geometry(f'+{x + 200}+{y + 200}')
+
+        self.master.wm_attributes('-disabled', True)
+        dialog.bind('<Destroy>', lambda _: self.master.wm_attributes('-disabled', False))
+
         dialog.resizable(False, False)
-        dialog.grab_set()
+        dialog.focus()
 
         info = tk.Message(dialog, text = INFO, width = 600)
         info.pack()
