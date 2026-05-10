@@ -3,14 +3,12 @@ MAIN_WINDOW_TITLE = 'RNoTe'
 MAIN_WINDOW_SIZE = '800x500'
 
 # Used at main_menu.py for the "about" dialog.
-INFO = '''
-RNoTe
-
-本项目仓库： https://github.com/SkyElysium/RNoTe
-
+FIRST_INFO = '项目开源在：https://github.com/SkyElysium/RNoTe'
+SECOND_INFO = '''\n
 Licensed Under the MIT License.
-Copyright(c) 2025 SkyElysium.
+Copyright (c) 2025 SkyElysium.
 '''
+
 ISSUE_URL = 'https://github.com/SkyElysium/RNoTe/issues/new'
 
 # Used at custom_notebook.py for the "layout" function.

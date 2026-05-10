@@ -1,6 +1,8 @@
 from typing import Optional
 
 import tkinter as tk
+import tkinter.ttk as ttk
+
 import webbrowser
 
 from core.config import *
@@ -57,7 +59,7 @@ class MainMenu(tk.Menu):
         self.file_option.add_command(
             label = '关闭',
             accelerator = 'Ctrl+F4',
-            command = self.main_notebook.remove_tab
+            command = self.main_notebook.safely_close_file
         )
         self.file_option.add_separator()
         self.file_option.add_command(
@@ -202,8 +204,10 @@ class MainMenu(tk.Menu):
         dialog.resizable(False, False)
         dialog.focus()
 
-        info = tk.Message(dialog, text = INFO, width = 600)
-        info.pack()
+        tk.Label(dialog, text = MAIN_WINDOW_TITLE, font = ('Consolas', 15)).pack()
+        ttk.Separator(dialog).pack(fill = 'x')
+        tk.Message(dialog, text = FIRST_INFO, width = 600).pack()
+        tk.Message(dialog, text = SECOND_INFO, width = 600, justify = 'center').pack(side = 'bottom')
 
     def _link_to_issue(self) -> None:
 

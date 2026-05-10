@@ -41,18 +41,23 @@ class CustomNotebook(ttk.Notebook):
 
         if self.identify(event.x, event.y) == 'close':
             tab_id = f'@{event.x}, {event.y}'
-            tab = self.tabs()[self.index(tab_id)]
 
-            if self.nametowidget(tab).text.edit_modified():
-                reply = messagebox.askyesnocancel(
-                    title = MAIN_WINDOW_TITLE,
-                    message = '是否在关闭之前保存文件？'
-                )
-                if reply:
-                    if self.save_file(file_path = self.nametowidget(tab).path) == 'NotSaved': return
-                if reply is None: return
+            self.safely_close_file(tab_id = tab_id)
 
-            self.remove_tab(tab_id = tab_id)
+    def safely_close_file(self, tab_id: str = '') -> None:
+
+        tab = self.tabs()[self.index(tab_id)] if tab_id else self.select()
+
+        if self.nametowidget(tab).text.edit_modified():
+            reply = messagebox.askyesnocancel(
+                title = MAIN_WINDOW_TITLE,
+                message = '是否在关闭之前保存文件？'
+            )
+            if reply:
+                if self.save_file(file_path = self.nametowidget(tab).path) == 'NotSaved': return
+            if reply is None: return
+
+        self.remove_tab(tab_id = tab_id)
 
     def _move_selected_tab(self, event: tk.Event) -> None:
 
@@ -131,6 +136,8 @@ class CustomNotebook(ttk.Notebook):
         text_tab.label = file.name
 
         text_tab.text.edit_modified(False)
+        text_tab.text.mark_set('insert', '1.0')
+        text_tab.text.focus_set()
         text_tab.line_number_bar.update_line_number()
 
     def save_file(self, event: Optional[tk.Event] = None, file_path: str = '') -> Optional[str]:
@@ -173,6 +180,7 @@ class CustomNotebook(ttk.Notebook):
         self.save_file()
 
         self.tab(tab, text = text_tab.label)
+        self._update_info_on_title()
 
 
 class TextTab(tk.Frame):
