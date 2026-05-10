@@ -218,9 +218,8 @@ class TextTab(tk.Frame):
         self.scrollbar.grid(row = 0, column = 2, sticky = 'ns')
 
         self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
-        self.x_scrollbar.grid(row = 2, column = 0, columnspan = 2, sticky = 'ew')
 
-        self.text['xscrollcommand'] = self.x_scrollbar.set
+        self.text['xscrollcommand'] = self._is_out_of_text
         self.x_scrollbar.config(command = self.text.xview)
 
         self.text.grid(row = 0, column = 1, sticky = 'nsew')
@@ -233,13 +232,11 @@ class TextTab(tk.Frame):
 
         self.text.bind('<Control-o>', self._ctrl_o)
         self.text.bind('<Button-3>', self._popup_menu)
-        self.text.bind('<Configure>', self._is_out_of_text)
-        self.text.bind('<Any-KeyPress>', self._delay_to_detect_text)
 
         self.text.bind('<<Modified>>', self._text_is_changed)
 
         # For the line number bar
-        self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number, add = '+')
+        self.text.bind('<Any-KeyPress>', self._delay_to_update_line_number)
         self.text.bind('<B2-Motion>', self._selecting_scrolling)
 
         self.line_number_bar.bind('<Button-1>', self._no_clicking_line_number_bar)
@@ -273,11 +270,6 @@ class TextTab(tk.Frame):
 
         self.menu.post(event.x_root, event.y_root)
 
-    def _delay_to_detect_text(self, event: tk.Event) -> None:
-
-        # Wait until pressing successfully.
-        self.after(1, self._is_out_of_text)
-
     def _delay_to_update_line_number(self, event: Optional[tk.Event] = None) -> None:
 
         # Wait until entering successfully.
@@ -290,12 +282,14 @@ class TextTab(tk.Frame):
 
     def _ctrl_o(self, event: tk.Event) -> None: return None  # Tkinter has bound ctrl+o inside "Text".
 
-    def _is_out_of_text(self, event: Optional[tk.Event] = None) -> None:
+    def _is_out_of_text(self, upper, lower) -> None:
 
-        if self.text.xview() != (0.0, 1.0):
-            self.x_scrollbar.grid()
-        else:
+        if float(upper) == 0.0 and float(lower) == 1.0:
             self.x_scrollbar.grid_remove()
+            return
+        else:
+            self.x_scrollbar.grid()
+        self.x_scrollbar.set(upper, lower)
 
     def _text_is_changed(self, event: tk.Event) -> None:
 
@@ -350,7 +344,6 @@ class TextTab(tk.Frame):
     def _update_ui(self) -> None:
 
         self.line_number_bar.update_line_number()
-        self._is_out_of_text()
 
     def copy_file_path(self) -> None:
 
