@@ -98,8 +98,6 @@ class CustomNotebook(ttk.Notebook):
         self.forget(tab)
         self.nametowidget(tab).destroy()
 
-        self.event_generate('<<NotebookTabClosed>>')
-
         self._update_info_on_title()
 
     def get_tab(self) -> Tuple[str, TextTab]:
