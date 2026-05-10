@@ -44,7 +44,7 @@ class CustomNotebook(ttk.Notebook):
 
             self.safely_close_file(tab_id = tab_id)
 
-    def safely_close_file(self, tab_id: str = '') -> None:
+    def safely_close_file(self, event: Optional[tk.Event] = None, tab_id: str = '') -> None:
 
         tab = self.tabs()[self.index(tab_id)] if tab_id else self.select()
 
