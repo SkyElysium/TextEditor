@@ -138,7 +138,6 @@ class CustomNotebook(ttk.Notebook):
         text_tab.text.mark_set('insert', '1.0')
         text_tab.text.focus_set()
 
-        text_tab._is_out_of_text()
         text_tab.line_number_bar.update_line_number()
 
     def save_file(self, event: Optional[tk.Event] = None, file_path: str = '') -> Optional[str]:
