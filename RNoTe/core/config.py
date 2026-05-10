@@ -41,3 +41,24 @@ CUSTOM_NOTEBOOK_STYLE = [('CustomNotebook.tab',
         })
     ]
 })]
+
+CUSTOM_X_SCROLLBAR_STYLE = [
+    (
+        "Custom.Horizontal.TScrollbar.trough",
+        {
+            "children": [
+                (
+                    "Custom.Horizontal.TScrollbar.thumb",
+                    {
+                        "unit": "1",
+                        "children": [
+                            ("Custom.Horizontal.TScrollbar.grip", {"sticky": ""})
+                        ],
+                        "sticky": "nswe",
+                    },
+                )
+            ],
+            "sticky": "we",
+        },
+    )
+]

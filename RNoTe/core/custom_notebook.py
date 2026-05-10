@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from audioop import minmax
 from typing import Optional, Tuple
 
 import tkinter as tk
@@ -30,6 +32,23 @@ class CustomNotebook(ttk.Notebook):
         self.custom_style.layout('CustomNotebook.Tab', CUSTOM_NOTEBOOK_STYLE)
 
         self['style'] = 'CustomNotebook'
+
+        # X Scrollbar in each tab
+        self.custom_style.element_create("Custom.Horizontal.TScrollbar.trough", "from", "clam")
+        self.custom_style.element_create("Custom.Horizontal.TScrollbar.thumb", "from", "clam")
+        self.custom_style.element_create("Custom.Horizontal.TScrollbar.grip", "from", "clam")
+
+        self.custom_style.layout("Custom.Horizontal.TScrollbar", CUSTOM_X_SCROLLBAR_STYLE)
+
+        self.custom_style.configure("Custom.Horizontal.TScrollbar",
+            gripcount = 0,
+            background = "#c0c0c0",
+            troughcolor = '#f0f0f0',
+            bordercolor = "#f0f0f0",
+            lightcolor = '#c0c0c0',
+            darkcolor = '#c0c0c0',
+            arrowsize = 6
+        )
 
         # Binding part
         self.bind('<Button-1>', self._on_pressing_close)
@@ -217,7 +236,8 @@ class TextTab(tk.Frame):
         self.scrollbar = tk.Scrollbar(self)
         self.scrollbar.grid(row = 0, column = 2, sticky = 'ns')
 
-        self.x_scrollbar = tk.Scrollbar(self, orient = 'horizontal')
+        self.x_scrollbar = ttk.Scrollbar(self, orient = 'horizontal', style = 'Custom.Horizontal.TScrollbar')
+        self.x_scrollbar.grid(row = 0, column = 1, sticky = 'sew')
 
         self.text['xscrollcommand'] = self._is_out_of_text
         self.x_scrollbar.config(command = self.text.xview)
@@ -284,11 +304,11 @@ class TextTab(tk.Frame):
 
     def _is_out_of_text(self, upper, lower) -> None:
 
-        if float(upper) == 0.0 and float(lower) == 1.0:
-            self.x_scrollbar.grid_remove()
-            return
+        if self.text.xview() != (0.0, 1.0):
+            self.x_scrollbar.lift(self.text)
         else:
-            self.x_scrollbar.grid()
+            self.x_scrollbar.lower(self.text)
+
         self.x_scrollbar.set(upper, lower)
 
     def _text_is_changed(self, event: tk.Event) -> None:
