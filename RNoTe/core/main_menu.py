@@ -159,6 +159,12 @@ class MainMenu(tk.Menu):
 
     def _change_status_of_options(self) -> None:
 
+        try:
+            self.master.clipboard_get()
+            self.edit_option.entryconfig('粘贴', state = 'normal')
+        except tk.TclError:
+            self.edit_option.entryconfig('粘贴', state = 'disabled')
+
         status = 'disabled' if not self.main_notebook.tabs() else 'normal'
 
         for each in self.file_option_checklist:
@@ -167,12 +173,6 @@ class MainMenu(tk.Menu):
             self.edit_option.entryconfig(each, state = status)
         for each in self.view_option_checklist:
             self.view_option.entryconfig(each, state = status)
-
-        try:
-            self.master.clipboard_get()
-            self.edit_option.entryconfig('粘贴', state = 'normal')
-        except tk.TclError:
-            self.edit_option.entryconfig('粘贴', state = 'disabled')
 
     def _change_font_size(self, *args) -> None:
 
