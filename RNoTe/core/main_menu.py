@@ -168,6 +168,12 @@ class MainMenu(tk.Menu):
         for each in self.view_option_checklist:
             self.view_option.entryconfig(each, state = status)
 
+        try:
+            self.master.clipboard_get()
+            self.edit_option.entryconfig('粘贴', state = 'normal')
+        except tk.TclError:
+            self.edit_option.entryconfig('粘贴', state = 'disabled')
+
     def _change_font_size(self, *args) -> None:
 
         for tab_id in self.main_notebook.tabs():

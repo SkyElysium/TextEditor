@@ -288,7 +288,22 @@ class TextTab(tk.Frame):
 
         self._delay_to_highlight()
 
+        self._check_status_of_options()
+
         self.menu.post(event.x_root, event.y_root)
+
+    def _check_status_of_options(self) -> None:
+
+        if self.path:
+            self.menu.entryconfig('复制当前文件路径', state = 'normal')
+        else:
+            self.menu.entryconfig('复制当前文件路径', state = 'disabled')
+
+        try:
+            self.notebook.main_window.clipboard_get()
+            self.menu.entryconfig('粘贴', state = 'normal')
+        except tk.TclError:
+            self.menu.entryconfig('粘贴', state = 'disabled')
 
     def _delay_to_update_line_number(self, event: Optional[tk.Event] = None) -> None:
 
