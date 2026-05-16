@@ -195,13 +195,16 @@ class MainMenu(tk.Menu):
 
         list_ = self.main_notebook.tabs()
 
-        for id in list_:
-            tab = self.main_notebook.nametowidget(id)
+        for tab_id in list_:
+            tab = self.main_notebook.nametowidget(tab_id)
             now_tab_id, _ = self.main_notebook.get_tab()
 
-            tab_name = f'● {tab.label}' if id == now_tab_id else tab.label
+            tab_name = f'● {tab.label}' if tab_id == now_tab_id else tab.label
 
-            self.tab_list.add_command(label = tab_name)
+            self.tab_list.add_command(
+                label = tab_name,
+                command = lambda tab_id = tab_id: self.main_notebook.select(tab_id)
+            )
 
     def _change_font_size(self, *args) -> None:
 
