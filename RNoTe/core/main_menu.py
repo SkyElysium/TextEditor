@@ -22,7 +22,7 @@ class MainMenu(tk.Menu):
         self['postcommand'] = self._change_status_of_options
 
         # Options that need checking the status in "_change_status_of_options"
-        self.file_option_checklist = ['关闭', '保存', '另存为...']
+        self.file_option_checklist = ['关闭', '保存', '另存为...', '标签']
         self.edit_option_checklist = ['撤销', '重做', '复制', '剪切', '粘贴', '全选']
         self.view_option_checklist = ['放大', '缩小', '恢复默认大小']
 
@@ -56,6 +56,18 @@ class MainMenu(tk.Menu):
             command = self.main_notebook.save_file_as
         )
         self.file_option.add_separator()
+
+        # Tab List
+        self.tab_list = tk.Menu(
+            self.file_option,
+            tearoff = False,
+            activeforeground = 'black',
+            activebackground = '#91c9f7',
+            postcommand = self._get_tab_list
+        )
+
+        self.file_option.add_cascade(label = '标签', menu = self.tab_list)
+
         self.file_option.add_command(
             label = '关闭',
             accelerator = 'Ctrl+F4',
@@ -159,12 +171,6 @@ class MainMenu(tk.Menu):
 
     def _change_status_of_options(self) -> None:
 
-        try:
-            self.master.clipboard_get()
-            self.edit_option.entryconfig('粘贴', state = 'normal')
-        except tk.TclError:
-            self.edit_option.entryconfig('粘贴', state = 'disabled')
-
         status = 'disabled' if not self.main_notebook.tabs() else 'normal'
 
         for each in self.file_option_checklist:
@@ -173,6 +179,29 @@ class MainMenu(tk.Menu):
             self.edit_option.entryconfig(each, state = status)
         for each in self.view_option_checklist:
             self.view_option.entryconfig(each, state = status)
+
+        try:
+            self.master.clipboard_get()
+            if self.main_notebook.tabs():
+                self.edit_option.entryconfig('粘贴', state = 'normal')
+        except tk.TclError:
+            self.edit_option.entryconfig('粘贴', state = 'disabled')
+
+    def _get_tab_list(self) -> None:
+
+        if not self.main_notebook.tabs(): return
+
+        self.tab_list.delete('0', 'end')
+
+        list_ = self.main_notebook.tabs()
+
+        for id in list_:
+            tab = self.main_notebook.nametowidget(id)
+            now_tab_id, _ = self.main_notebook.get_tab()
+
+            tab_name = f'● {tab.label}' if id == now_tab_id else tab.label
+
+            self.tab_list.add_command(label = tab_name)
 
     def _change_font_size(self, *args) -> None:
 
