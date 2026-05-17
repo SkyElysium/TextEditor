@@ -19,7 +19,7 @@ class LineNumberBar(tk.Text):
             fg = '#8f8f8f',
             state = 'disabled',
             cursor = 'arrow',
-            bd = False,
+            bd = 0,
             font = ('Consolas', font_size)
         )
 
@@ -47,6 +47,7 @@ class LineNumberBar(tk.Text):
         return 'break'
 
     def update_line_number(self) -> None:
+
         line_num = self.tab_text.index('end').split('.')[0]
 
         line_num_text = '\n'.join([str(num) for num in range(1, int(line_num))])
@@ -59,8 +60,7 @@ class LineNumberBar(tk.Text):
 
         self.config(state = 'normal')
 
-        self.delete('1.0', 'end')
-        self.insert('1.0', line_num_text)
+        self.replace('1.0', 'end', line_num_text)
 
         self.config(state = 'disabled')
 

@@ -224,7 +224,7 @@ class TextTab(tk.Frame):
             self,
             wrap = 'none',
             undo = True,
-            bd = False,
+            bd = 0,
             font = ('Consolas', font_size),
             selectbackground = '#d3e9fc',
             selectforeground = 'black'
